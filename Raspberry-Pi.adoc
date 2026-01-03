@@ -1,0 +1,131 @@
+= Raspberry Pi
+:experimental:
+:source-highlighter: rouge
+:source-language: shell
+:icons: font
+:toc: true
+:sectanchors:
+:star: *
+Markus Dangl
+
+== Low voltage warning
+
+* https://pimylifeup.com/raspberry-pi-low-voltage-warning/
+
+Use `dmesg -w` to check for message "Under-voltage detected!".
+Use `vcgencmd get_throttled` to check if under-voltage occured at some point (0x50000) or is currently detected (0x00005).
+
+|====
+|Bit    |Hex Value      |Meaning
+
+|0      |1              |Under-voltage detected
+|1      |2              |ARM frequency has been caped
+|2      |4              |Currently throttled
+|3      |8              |Soft temperature limit is active
+|16     |1000           |Under-voltage has occurred
+|17     |2000           |ARM frequency capping has occurred
+|18     |4000           |Throttling has occurred
+|19     |8000           |Soft temperature limit has occurred
+|====
+
+Worked after disconnecting the sense hat and using a different USB cable.
+
+== Wifi not reconnecting
+
+
+
+== UART
+
+* Directly connecting via UART to NTP daemon: https://www.raspberry-pi-geek.de/ausgaben/rpg/2014/01/raspberry-pi-als-funkuhr-und-ntp-stratum-1-zeitserver/2/
+    ** Update 2021 https://www.raspberry-pi-geek.de/ausgaben/rpg/2021/08/raspi-als-ntp-server-mit-dcf77-modul/
+    ** NTP documentation for reference clock driver: https://docs.ntpsec.org/latest/driver_generic.html
+    ** NTP source code for DCF77 test util: https://github.com/ntp-project/ntp/blob/stable/parseutil/testdcf.c
+* "Bitbanging" Software Timing: https://raspberrypi.stackexchange.com/questions/3475/how-to-get-more-than-one-uart-interface
+
+
+== Misc debug output
+
+See output of raspinfo in `raspinfo.txt`.
+
+=== lsusb
+
+[source,text]
+----
+❯ lsusb
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 0424:9514 Microchip Technology, Inc. (formerly SMSC) SMC9514 Hub
+Bus 001 Device 003: ID 0424:ec00 Microchip Technology, Inc. (formerly SMSC) SMSC9512/9514 Fast Ethernet Adapter
+Bus 001 Device 005: ID 045e:0040 Microsoft Corp. Wheel Mouse Optical
+Bus 001 Device 006: ID 046d:c312 Logitech, Inc. DeLuxe 250 Keyboard
+Bus 001 Device 007: ID 7392:7811 Edimax Technology Co., Ltd EW-7811Un 802.11n Wireless Adapter [Realtek RTL8188CUS]
+----
+
+=== lsmod
+
+[source,text]
+----
+❯ lsmod
+Module                  Size  Used by
+snd_seq_dummy          12288  0
+snd_hrtimer            12288  1
+snd_seq                73728  7 snd_seq_dummy
+snd_seq_device         12288  1 snd_seq
+aes_arm_bs             24576  1
+crypto_simd            12288  1 aes_arm_bs
+cryptd                 20480  1 crypto_simd
+aes_arm                12288  2 aes_arm_bs
+ccm                    16384  3
+rtl8192cu              86016  0
+rtl_usb                16384  1 rtl8192cu
+rtl8192c_common        61440  1 rtl8192cu
+rtlwifi               118784  3 rtl_usb,rtl8192c_common,rtl8192cu
+mac80211              954368  3 rtl_usb,rtlwifi,rtl8192cu
+libarc4                12288  1 mac80211
+cfg80211              888832  2 mac80211,rtlwifi
+bcm2835_isp            28672  0
+raspberrypi_hwmon      12288  0
+bcm2835_codec          49152  0
+bcm2835_v4l2           45056  0
+binfmt_misc            16384  1
+v4l2_mem2mem           40960  1 bcm2835_codec
+bcm2835_mmal_vchiq     32768  3 bcm2835_isp,bcm2835_codec,bcm2835_v4l2
+rfkill                 28672  4 rtlwifi,cfg80211
+vc_sm_cma              24576  2 bcm2835_isp,bcm2835_mmal_vchiq
+videobuf2_vmalloc      12288  1 bcm2835_v4l2
+videobuf2_dma_contig    16384  2 bcm2835_isp,bcm2835_codec
+videobuf2_memops       12288  2 videobuf2_dma_contig,videobuf2_vmalloc
+videobuf2_v4l2         28672  4 bcm2835_isp,bcm2835_codec,bcm2835_v4l2,v4l2_mem2mem
+videodev              286720  5 bcm2835_isp,bcm2835_codec,bcm2835_v4l2,v4l2_mem2mem,videobuf2_v4l2
+videobuf2_common       69632  8 bcm2835_isp,bcm2835_codec,videobuf2_dma_contig,videobuf2_vmalloc,videobuf2_memops,bcm2835_v4l2,v4l2_mem2mem,videobuf2_v4l2
+raspberrypi_gpiomem    12288  0
+mc                     53248  6 bcm2835_isp,bcm2835_codec,videobuf2_common,videodev,v4l2_mem2mem,videobuf2_v4l2
+snd_bcm2835            24576  1
+uio_pdrv_genirq        12288  0
+uio                    20480  1 uio_pdrv_genirq
+sch_fq_codel           16384  2
+i2c_dev                12288  0
+zram                   36864  1
+lz4_compress           24576  1 zram
+fuse                  155648  5
+nfnetlink              20480  1
+ip_tables              24576  0
+x_tables               32768  1 ip_tables
+ipv6                  532480  56
+vc4                   356352  15
+snd_soc_hdmi_codec     16384  1
+drm_display_helper     20480  1 vc4
+cec                    49152  1 vc4
+drm_dma_helper         20480  2 vc4
+drm_kms_helper        196608  2 drm_dma_helper,vc4
+drm                   593920  11 drm_dma_helper,vc4,drm_display_helper,drm_kms_helper
+drm_panel_orientation_quirks    12288  1 drm
+snd_soc_core          262144  2 vc4,snd_soc_hdmi_codec
+snd_compress           16384  1 snd_soc_core
+snd_pcm_dmaengine      16384  1 snd_soc_core
+snd_pcm               126976  5 snd_compress,snd_pcm_dmaengine,snd_soc_hdmi_codec,snd_bcm2835,snd_soc_core
+snd_timer              36864  3 snd_seq,snd_hrtimer,snd_pcm
+snd                    94208  14 snd_compress,snd_seq,snd_soc_hdmi_codec,snd_timer,snd_seq_device,snd_bcm2835,snd_soc_core,snd_pcm
+i2c_bcm2835            12288  0
+backlight              16384  2 drm_kms_helper,drm
+fixed                  12288  0
+----

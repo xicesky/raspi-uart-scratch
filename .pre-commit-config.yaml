@@ -1,0 +1,52 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: trailing-whitespace
+        exclude: raspinfo.txt
+      - id: check-added-large-files
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: forbid-new-submodules
+      - id: mixed-line-ending
+      - id: end-of-file-fixer
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+        args:
+          - --format=parsable
+          - --strict
+          - -d
+          - '{extends: relaxed, rules: {line-length: disable}}'
+        exclude: user-data.yaml
+  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    rev: 0.2.3
+    hooks:
+      - id: yamlfmt
+        args:
+          - --mapping=2
+          - --sequence=4
+          - --offset=2
+          # Match yamllint args - we don't care about line-length.
+          - --width=1200
+        exclude: user-data.yaml
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+  - repo: https://gitlab.com/bmares/check-json5
+    rev: v1.0.1
+    hooks:
+      - id: check-json5
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 3.6.0
+    hooks:
+      - id: editorconfig-checker
+        alias: ec
+        exclude: raspinfo.txt

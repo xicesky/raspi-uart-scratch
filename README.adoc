@@ -1,0 +1,37 @@
+= raspi-uart-scratch
+:experimental:
+:source-highlighter: rouge
+:source-language: shell
+:icons: font
+:toc: true
+:sectanchors:
+:star: *
+Markus Dangl
+
+== Requirements
+
+
+== Development
+
+Requirements:
+
+* https://pre-commit.com/[pre-commit] (optional), install e.g. using `pip install pre-commit`
+
+[source,console]
+----
+$ git clone git@github.com:xicesky/raspi-uart-scratch.git
+$ cd raspi-uart-scratch
+$ pre-commit install
+
+Run some debug stuff
+$ raspi-uart-scratch
+----
+
+=== Maintenace
+
+----
+Also, update pre-commit hooks from time to time:
+$ pre-commit autoupdate
+$ pre-commit run --all-files
+$ git add -A && git commit -m "Update pre-commit hooks"
+----
