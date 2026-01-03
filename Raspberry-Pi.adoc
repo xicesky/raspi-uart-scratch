@@ -8,6 +8,10 @@
 :star: *
 Markus Dangl
 
+== Pinout
+
+https://www.elektronik-kompendium.de/sites/raspberry-pi/1907101.htm
+
 == Low voltage warning
 
 * https://pimylifeup.com/raspberry-pi-low-voltage-warning/
@@ -68,7 +72,29 @@ For now, removing the USB dongle and then plugging it back in helps.
 === gcc
 
 Target architecture is `arm-linux-gnueabihf` for RPi2 (as determined by `gcc -dumpmachine`).
+Many old tutorial point to the old raspberry toolchain (https://github.com/raspberrypi/tools), which is deprecated.
+Ubuntu has support for armhf, which can simply be installed via `sudo apt-get install gcc-arm-linux-gnueabihf`.
 
+Some hints for cross-compiling with https://manpages.ubuntu.com/manpages/jammy/man1/mk-sbuild.1.html[mk-sbuild] (see also https://wiki.debian.org/sbuild[sbuild]) can be found https://earthly.dev/blog/cross-compiling-raspberry-pi/[here], but many parts of this article are out-of-date (especially the note "The cross-compilation toolchains in the Ubuntu repository are not compatible with Raspberry Pi boards").
+
+=== Rust
+
+Make sure you have docker (or podman) installed -- this is required for cross.
+Install rust as per usual (https://rustup.rs/), install https://github.com/cross-rs/cross?tab=readme-ov-file[cross] via cargo: `cargo install cross`
+
+* https://github.com/rpi-pal/rpi-pal (the currently maintained (?) version of https://github.com/golemparts/rppal[rppal] according to https://www.reddit.com/r/rust/comments/1o59voa/rppal_forking_and_maintaining/[this reddit thread])
+
+=== Scratch
+
+In order to write scratch from proper text files instead of having to use drag and drop:
+
+* https://scratch.mit.edu/discuss/topic/792714/?page=1#post-8263820
+* https://github.com/ScrybeLang/ScratchGen/tree/main/src/ScratchGen
+* https://github.com/DavidBuchanan314/boiga
+
+=== Python
+
+Probably won't use python, but if i still do, i'd like to use https://textual.textualize.io/guide/workers/[textual workers].
 
 == Misc debug output
 

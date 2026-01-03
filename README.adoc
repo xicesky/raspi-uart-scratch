@@ -17,6 +17,7 @@ Requirements:
 
 * https://pre-commit.com/[pre-commit] (optional), install e.g. using `pip install pre-commit`
 * Cross-compiler for arm, e.g. `sudo apt-get install gcc-arm-linux-gnueabihf`
+* Development headers: `sudo apt-get install libudev-dev`
 
 [source,console]
 ----

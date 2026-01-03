@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "cppdbg",
+        "request": "launch",
+        "name": "cargo run -p rust-tools",
+        "cwd": "${workspaceFolder}/rust-tools",
+        "program": "${workspaceFolder}/rust-tools/target/debug/rust-tools",
+        "environment": [
+          {
+            "name": "RUST_BACKTRACE",
+            "value": "short"
+          },
+          {
+            "name": "RUSTC_TOOLCHAIN",
+            "value": "/home/dangl@mobileX.intra/.rustup/toolchains/stable-x86_64-unknown-linux-gnu"
+          }
+        ],
+        "args": [],
+        "sourceFileMap": {},
+        "osx": {
+          "MIMode": "lldb"
+        }
+      }
+    ]
+}
