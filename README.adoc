@@ -16,15 +16,14 @@ Markus Dangl
 Requirements:
 
 * https://pre-commit.com/[pre-commit] (optional), install e.g. using `pip install pre-commit`
+* Cross-compiler for arm, e.g. `sudo apt-get install gcc-arm-linux-gnueabihf`
 
 [source,console]
 ----
 $ git clone git@github.com:xicesky/raspi-uart-scratch.git
 $ cd raspi-uart-scratch
 $ pre-commit install
-
-Run some debug stuff
-$ raspi-uart-scratch
+$ make
 ----
 
 === Maintenace
