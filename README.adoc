@@ -28,8 +28,10 @@ $ make
 
 === Maintenace
 
+Update pre-commit hooks from time to time:
+
+[source,console]
 ----
-Also, update pre-commit hooks from time to time:
 $ pre-commit autoupdate
 $ pre-commit run --all-files
 $ git add -A && git commit -m "Update pre-commit hooks"
