@@ -61,11 +61,19 @@ For now, removing the USB dongle and then plugging it back in helps.
 
 == UART
 
+* Raspberry Pi documentation: https://www.raspberrypi.com/documentation/computers/configuration.html#configure-uarts
 * Directly connecting via UART to NTP daemon: https://www.raspberry-pi-geek.de/ausgaben/rpg/2014/01/raspberry-pi-als-funkuhr-und-ntp-stratum-1-zeitserver/2/
     ** Update 2021 https://www.raspberry-pi-geek.de/ausgaben/rpg/2021/08/raspi-als-ntp-server-mit-dcf77-modul/
     ** NTP documentation for reference clock driver: https://docs.ntpsec.org/latest/driver_generic.html
     ** NTP source code for DCF77 test util: https://github.com/ntp-project/ntp/blob/stable/parseutil/testdcf.c
 * "Bitbanging" Software Timing: https://raspberrypi.stackexchange.com/questions/3475/how-to-get-more-than-one-uart-interface
+
+To enable the primary UART (PL011 on my RPi2) it is enough to configure it via raspi-config as described in https://www.raspberrypi.com/documentation/computers/configuration.html#disabling-the-linux-serial-console[the raspberry documentation].
+
+UART signal:
+image:doc/RS-232_timing.svg[]
+
+This image from wikipedia shows the logical signal, the UART on RPi's GPIO ports seems to follow the rule that GND is a logical zero and +3.3V is a logical one.
 
 == Programming
 
