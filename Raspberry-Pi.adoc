@@ -94,6 +94,8 @@ Install rust as per usual (https://rustup.rs/), install https://github.com/cross
 
 === Scratch
 
+https://www.raspberrypi.org/blog/scratch-3-desktop-for-raspbian-on-raspberry-pi/
+
 In order to write scratch from proper text files instead of having to use drag and drop:
 
 * https://scratch.mit.edu/discuss/topic/792714/?page=1#post-8263820
