@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+jiff = "0.2.18"
+num-traits = "0.2.19"
 ringbuffer = "0.16.0"
 serialport = "4.8.1"

@@ -6,6 +6,7 @@ use serialport::{self, ClearBuffer, SerialPort};
 
 mod bitrep;
 mod dcf77_decoder;
+mod pulse_decoder;
 mod raspi_refclock;
 
 /*
