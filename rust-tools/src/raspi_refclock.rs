@@ -41,11 +41,3 @@ pub fn setup_serial() -> TTYPort{
         .expect("Failed to open port");
     port
 }
-
-pub fn print_serial_values(values: &[u8]) {
-    // io::stdout().write_all(values).unwrap();
-    for value in values {
-        println!("{:010b}", value);
-    }
-    io::stdout().flush().unwrap();
-}

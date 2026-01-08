@@ -282,8 +282,8 @@ impl fmt::Display for Bit {
         write!(f, "{}", match *self {
             Bit::Unknown        => "?",
             Bit::Skipped        => "_",
-            Bit::Value(false)   => "|",
-            Bit::Value(true)    => "#",
+            Bit::Value(false)   => "0",
+            Bit::Value(true)    => "1",
         })
     }
 }

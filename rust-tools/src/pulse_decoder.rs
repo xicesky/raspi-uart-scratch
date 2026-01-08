@@ -1,8 +1,8 @@
 use crate::bitrep::Bit;
 
-fn decode_pulse(pulse: u8) -> Bit {
+pub fn decode_pulse(pulse: u8) -> Bit {
     // Check that "pulsed" is a series of ones starting from lsb
-    if ((pulse + 1) & pulse >= 1) {
+    if pulse.wrapping_add(1) & pulse >= 1 {
         return Bit::Unknown
     } else if pulse == 0 {
         return Bit::Skipped
@@ -15,5 +15,27 @@ fn decode_pulse(pulse: u8) -> Bit {
             <=>     4 < count(bits)
          */
         return Bit::Value(pulse > 0xF)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decode() {
+        assert_eq!(decode_pulse(0b0), Bit::Skipped);
+        assert_eq!(decode_pulse(0b1), Bit::Value(false));
+        assert_eq!(decode_pulse(0b10), Bit::Unknown);
+        assert_eq!(decode_pulse(0b11), Bit::Value(false));
+        assert_eq!(decode_pulse(0b100), Bit::Unknown);
+        assert_eq!(decode_pulse(0b101), Bit::Unknown);
+        assert_eq!(decode_pulse(0b110), Bit::Unknown);
+        assert_eq!(decode_pulse(0b111), Bit::Value(false));
+        assert_eq!(decode_pulse(0b1111), Bit::Value(false));
+        assert_eq!(decode_pulse(0b11111), Bit::Value(true));
+        assert_eq!(decode_pulse(0b111110), Bit::Unknown);
+        assert_eq!(decode_pulse(0b111111), Bit::Value(true));
+        assert_eq!(decode_pulse(0xFF), Bit::Value(true));
     }
 }

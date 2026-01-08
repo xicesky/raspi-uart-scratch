@@ -37,7 +37,7 @@ use crate::bitrep::*;
  * 58           P3    - Date Parity (even)
  * 59                 - usually missing (minute indication), except for leap insertion
  */
-const DECODE_HEADER : &str = "---------------RADMLS1248124P124812P1248121241248112481248P_";
+pub const DECODE_HEADER : &str = "---------------RADMLS1248124P124812P1248121241248112481248P_";
 
 /* Macro for error testing, borrowed from the "matches" crate:
     https://docs.rs/matches/0.1.10/matches/macro.assert_matches.html
@@ -183,7 +183,7 @@ fn decodeBCD<T>(lower_bits: &[Bit], higher_bits: &[Bit]) -> Result<T> where
     Ok(higher * ten + lower)
 }
 
-struct Decoder {
+pub struct Decoder {
     buffer: AllocRingBuffer<Bit>
     // let mut buffer = AllocRingBuffer::with_capacity(2);
 }
@@ -198,36 +198,36 @@ impl fmt::Display for Decoder {
 }
 
 impl Decoder {
-    fn new() -> Decoder {
+    pub fn new() -> Decoder {
         Decoder {
             buffer: AllocRingBuffer::new(60)
         }
     }
 
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.buffer.len()
     }
 
-    fn is_full(&self) -> bool {
+    pub fn is_full(&self) -> bool {
         self.buffer.is_full()
     }
 
     // FIXME: Remove?
-    fn to_vec(&self) -> Vec<Bit> {
+    pub fn to_vec(&self) -> Vec<Bit> {
         self.buffer.to_vec()
     }
 
-    fn add_maybe_bit<V: MaybeBit>(&mut self, value: V) -> &Self {
+    pub fn add_maybe_bit<V: MaybeBit>(&mut self, value: V) -> &Self {
         self.buffer.enqueue(to_bit(value));
         self
     }
 
-    fn add_bit(&mut self, value: Bit) -> &Self {
+    pub fn add_bit(&mut self, value: Bit) -> &Self {
         self.buffer.enqueue(value);
         self
     }
 
-    fn add_bits<B, V>(&mut self, count: usize, value: V) -> &Self where
+    pub fn add_bits<B, V>(&mut self, count: usize, value: V) -> &Self where
         B: MaybeBit + Copy,
         V: MaybeBits<BitElem = B>
     {
@@ -238,24 +238,24 @@ impl Decoder {
         self
     }
 
-    fn add_bitvec(&mut self, count: usize, bitvec: &Vec<Bit>) -> &Self {
+    pub fn add_bitvec(&mut self, count: usize, bitvec: &Vec<Bit>) -> &Self {
         assert!(count <= bitvec.len());
         self.add_bit_iter(bitvec[0..count].iter().map(|b| *b));
         self
     }
 
-    fn add_bit_iter(&mut self, iter: impl IntoIterator<Item = Bit>) -> &Self {
+    pub fn add_bit_iter(&mut self, iter: impl IntoIterator<Item = Bit>) -> &Self {
         self.buffer.extend(iter);
         self
     }
 
-    fn add_bit_ref_iter<'a>(&mut self, iter: impl IntoIterator<Item = &'a Bit>) -> &Self {
+    pub fn add_bit_ref_iter<'a>(&mut self, iter: impl IntoIterator<Item = &'a Bit>) -> &Self {
         self.buffer.extend(iter.into_iter().copied());
         self
     }
 
     // FIXME: Implement indexing trait
-    fn get_bit(&self, index: usize) -> Bit {
+    pub fn get_bit(&self, index: usize) -> Bit {
         assert!(index < 60);
         self.buffer[index]
     }
@@ -265,7 +265,7 @@ impl Decoder {
 
     // }
 
-    fn decode_dcf77(&self) -> Result<Zoned> {
+    pub fn decode_dcf77(&self) -> Result<Zoned> {
         if !self.buffer.is_full() {
             return From::from(DecodingFailure::NotEnoughBits)
         }
@@ -314,8 +314,6 @@ impl Decoder {
 #[cfg(test)]
 mod tests {
     use jiff::{Unit, Zoned};
-
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
     fn add_bits_helper<B, V>(rb: &mut AllocRingBuffer<Bit>, count: usize, value: V) where
