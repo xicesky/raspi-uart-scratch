@@ -4,7 +4,6 @@ use std::io::{Read,Write,Result};
 use std::time::Duration;
 
 use jiff::Zoned;
-use num_traits::sign;
 use serialport::{self, ClearBuffer, SerialPort};
 
 use crate::dcf77_decoder::Error;

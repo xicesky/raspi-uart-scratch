@@ -1,7 +1,4 @@
-use std::fmt::{self, Display};
-use std::iter::Map;
-use std::ops::Range;
-use std::slice::Iter;
+use std::fmt::{self};
 
 /* Notes:
     * Maybe should be something like an iterator.
@@ -75,9 +72,11 @@ pub trait MaybeBits {
     }
 }
 
+/*
 pub trait FixedLengthMaybeBits : MaybeBits {
     const BIT_COUNT: usize;
 }
+*/
 
 /*
 impl<PB: FixedLengthMaybeBits> MaybeBits for PB {
@@ -88,6 +87,7 @@ impl<PB: FixedLengthMaybeBits> MaybeBits for PB {
 }
 */
 
+#[allow(unused)]
 pub trait FromBits : Sized {
     fn from_bits_iter<B: PureBit, T: Iterator<Item = B>>(iter: T) -> Self;
 
@@ -196,9 +196,11 @@ impl MaybeBits for i32 {
     }
 }
 
+/*
 impl FixedLengthMaybeBits for u8 {
     const BIT_COUNT: usize = 8;
 }
+*/
 
 impl FromBits for u8 {
     fn from_bits_iter<B: PureBit, T: Iterator<Item = B>>(iter: T) -> Self {

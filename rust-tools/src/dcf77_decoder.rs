@@ -1,6 +1,6 @@
-use std::{fmt::{self, write}, ops::Range, slice::Iter};
+use std::fmt::{self};
 
-use jiff::{Zoned, civil::{Date, DateTime, date}, fmt::strtime::Display, tz};
+use jiff::{Zoned, civil::DateTime, tz};
 use num_traits::NumCast;
 use ringbuffer::{RingBuffer,AllocRingBuffer};
 // use serialport::Error;
@@ -41,7 +41,9 @@ pub const DECODE_HEADER : &str = "---------------RADMLS1248124P124812P1248121241
 
 /* Macro for error testing, borrowed from the "matches" crate:
     https://docs.rs/matches/0.1.10/matches/macro.assert_matches.html
+    Only used for tests
 */
+#[cfg(test)]
 macro_rules! assert_matches {
     ($expression:expr, $($pattern:tt)+) => {
         match $expression {
@@ -52,14 +54,14 @@ macro_rules! assert_matches {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum ParityBitName {
+pub enum ParityBitName {
     Minute,
     Hour,
     Date
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum DecodingFailure {
+pub enum DecodingFailure {
     NotEnoughBits,
     MissingBit,
     ParityError(ParityBitName),
@@ -75,6 +77,7 @@ pub enum Error {
     JiffError(jiff::Error)
 }
 
+#[allow(unused)]
 impl Error {
     fn decoding_failure(&self) -> Option<DecodingFailure> {
         match self {
@@ -127,12 +130,12 @@ impl<T> From<DecodingFailure> for Result<T> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum DCF77_TZ {
+pub enum Dcf77Tz {
     MEZ,
     MESZ
 }
 
-impl DCF77_TZ {
+impl Dcf77Tz {
     fn to_utc_offset(&self) -> tz::Offset {
         match *self {
             Self::MEZ => tz::offset(1),
@@ -144,24 +147,24 @@ impl DCF77_TZ {
     }
 }
 
-impl std::fmt::Display for DCF77_TZ {
+impl std::fmt::Display for Dcf77Tz {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl FromBits for Result<DCF77_TZ> {
+impl FromBits for Result<Dcf77Tz> {
     fn from_bits_iter<B: PureBit, T: Iterator<Item = B>>(iter: T) -> Self {
         let v: i8 = FromBits::from_bits_iter(iter);
         match v {
-            0b01 => Ok(DCF77_TZ::MEZ),
-            0b10 => Ok(DCF77_TZ::MESZ),
+            0b01 => Ok(Dcf77Tz::MEZ),
+            0b10 => Ok(Dcf77Tz::MESZ),
             _    => From::from(DecodingFailure::InvalidTimezoneBits)
         }
     }
 }
 
-fn checkParity(name: ParityBitName, bits: &[Bit]) -> Result<()> {
+fn check_parity(name: ParityBitName, bits: &[Bit]) -> Result<()> {
     let mut parity = false; /* even */
     for bit in bits {
         let value = bit.to_bit()
@@ -173,20 +176,20 @@ fn checkParity(name: ParityBitName, bits: &[Bit]) -> Result<()> {
     else { Ok(()) }
 }
 
-fn decodeBits<T>(bits: &[Bit]) -> Result<T> where
+fn decode_bits<T>(bits: &[Bit]) -> Result<T> where
     T: FromBits
 {
     FromBits::from_maybebits_lsb(bits)
         .ok_or(From::from(DecodingFailure::MissingBit)) // (1)
 }
 
-fn decodeBCD<T>(lower_bits: &[Bit], higher_bits: &[Bit]) -> Result<T> where
+fn decode_bcd<T>(lower_bits: &[Bit], higher_bits: &[Bit]) -> Result<T> where
     T: FromBits + num_traits::PrimInt
 {
     let ten: T = NumCast::from(10)
         .ok_or(DecodingFailure::BCDNotBigenough)?;
-    let lower: T = decodeBits(lower_bits)?;
-    let higher: T = decodeBits(higher_bits)?;
+    let lower: T = decode_bits(lower_bits)?;
+    let higher: T = decode_bits(higher_bits)?;
     Ok(higher * ten + lower)
 }
 
@@ -204,6 +207,7 @@ impl fmt::Display for Decoder {
     }
 }
 
+#[allow(unused)]
 impl Decoder {
     pub fn new() -> Decoder {
         Decoder {
@@ -283,20 +287,20 @@ impl Decoder {
             return From::from(DecodingFailure::NotSync)
         }
 
-        let dcf77_tz_res: Result<DCF77_TZ> = decodeBits(&bitvec[17..19])?;
-        let dcf77_tz: DCF77_TZ = dcf77_tz_res?;
+        let dcf77_tz_res: Result<Dcf77Tz> = decode_bits(&bitvec[17..19])?;
+        let dcf77_tz: Dcf77Tz = dcf77_tz_res?;
 
         if bitvec[20] != Bit::Value(true) {
             return From::from(DecodingFailure::MissingStartOfTimeCode)
         }
-        checkParity(ParityBitName::Minute, &bitvec[21..29])?;
-        let minute: i8 = decodeBCD(&bitvec[21..25], &bitvec[25..28])?;
-        checkParity(ParityBitName::Hour, &bitvec[29..36])?;
-        let hour: i8 = decodeBCD(&bitvec[29..33], &bitvec[33..35])?;
-        checkParity(ParityBitName::Date, &bitvec[36..59])?;
-        let day: i8 = decodeBCD(&bitvec[36..40], &bitvec[40..42])?;
-        let month: i8 = decodeBCD(&bitvec[45..49], &bitvec[49..50])?;
-        let year: i8 = decodeBCD(&bitvec[50..54], &bitvec[54..58])?;
+        check_parity(ParityBitName::Minute, &bitvec[21..29])?;
+        let minute: i8 = decode_bcd(&bitvec[21..25], &bitvec[25..28])?;
+        check_parity(ParityBitName::Hour, &bitvec[29..36])?;
+        let hour: i8 = decode_bcd(&bitvec[29..33], &bitvec[33..35])?;
+        check_parity(ParityBitName::Date, &bitvec[36..59])?;
+        let day: i8 = decode_bcd(&bitvec[36..40], &bitvec[40..42])?;
+        let month: i8 = decode_bcd(&bitvec[45..49], &bitvec[49..50])?;
+        let year: i8 = decode_bcd(&bitvec[50..54], &bitvec[54..58])?;
 
         let full_year: i16 = 2000 + year as i16;
 

@@ -1,9 +1,7 @@
+#![allow(unused)]
 
-use std::{io, vec};
-use std::io::Write;
 use std::time::Duration;
 use serialport::{self, DataBits, TTYPort};
-use ringbuffer::{RingBuffer,AllocRingBuffer};
 
 pub fn list_serial_ports() {
     let ports = serialport::available_ports().expect("No ports found!");
