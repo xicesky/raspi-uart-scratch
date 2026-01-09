@@ -155,10 +155,14 @@ impl std::fmt::Display for Dcf77Tz {
 
 impl FromBits for Result<Dcf77Tz> {
     fn from_bits_iter<B: PureBit, T: Iterator<Item = B>>(iter: T) -> Self {
-        let v: i8 = FromBits::from_bits_iter(iter);
+        /* We read everything as LSB, so this method will also be called with
+            an already reversed iterator. Thus using from_bits_iter for another
+            type (here: u8) will return an int with LSB order.
+        */
+        let v: u8 = FromBits::from_bits_iter(iter);
         match v {
-            0b01 => Ok(Dcf77Tz::MEZ),
-            0b10 => Ok(Dcf77Tz::MESZ),
+            0b10 /* Bits: zero, one */ => Ok(Dcf77Tz::MEZ),
+            0b01 /* Bits: one, zero */ => Ok(Dcf77Tz::MESZ),
             _    => From::from(DecodingFailure::InvalidTimezoneBits)
         }
     }
@@ -492,6 +496,38 @@ mod tests {
             last error: -
         dcf77:  2034-01-09T16:27:00+02:00[+02:00]
 
-        Signal 11111111 = _
+        FIXME: MESZ !? Nope, that's wrong
+
+        ---------------RADMLS1248124P124812P1248121241248112481248P_
+        01011110111101100010111100100000110010010010110000011001010_
+            last error: DecodingError(ParityError(Date))
+
+        0         1         2         3         4         5
+        012345678901234567890123456789012345678901234567890123456789
+        ---------------RADMLS1248124P124812P1248121241248112481248P_
+        00110100010000100010110101100000110010110110110000011001000_
+            last error: JiffError(parameter 'day' with value 33 is not in the required range of 1..=31)
+
+        1248 12 124 1248 1 1248 1248 P_
+        1011 01 101 1000 0 0110 0100 0_
+        13   2  5   1    0 6    2
+
+        ============================================================================================
+        Bug!? It's 2026-01-10 02:04 (or sth)
+
+        0         1         2         3         4         5
+        012345678901234567890123456789012345678901234567890123456789
+        ---------------RADMLS1248124P124812P1248121241248112481248P_
+        00001110011100100010110100001010100101011011111001011001001_
+            last error: DecodingError(ParityError(Minute))
+        dcf77:  2026-01-10T19:49:00+02:00[+02:00]
+
+        Time bits:
+        2             3
+        0 1234 567 8 9012 34 5
+        S 1248 124 P 1248 12 P
+        1 1010 000 1 0101 00 1
+        # 5    0   ! 12   0  !
+
      */
 }

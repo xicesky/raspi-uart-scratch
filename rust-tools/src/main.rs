@@ -6,7 +6,7 @@ use std::time::Duration;
 use jiff::Zoned;
 use serialport::{self, ClearBuffer, SerialPort};
 
-use crate::dcf77_decoder::Error;
+use crate::dcf77_decoder::{DecodingFailure, Error};
 
 mod bitrep;
 mod dcf77_decoder;
@@ -56,6 +56,7 @@ impl DebuggingDecoder {
         let mut current_error: Option<Error> = None;
         match self.dcf_decoder.decode_dcf77() {
             Ok(decoded) => self.last_decoded = Some(decoded),
+            Err(Error::DecodingError(DecodingFailure::NotSync)) => (),  /* ignore */
             Err(e) => current_error = Some(e)
         }
 
