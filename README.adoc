@@ -18,13 +18,14 @@ Requirements:
 * https://pre-commit.com/[pre-commit] (optional), install e.g. using `pip install pre-commit`
 * Cross-compiler for arm, e.g. `sudo apt-get install gcc-arm-linux-gnueabihf`
 * Development headers: `sudo apt-get install libudev-dev`
+* Rust: Use https://rustup.rs/[rustup] to install rust (`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`)
 
 [source,console]
 ----
 $ git clone git@github.com:xicesky/raspi-uart-scratch.git
-$ cd raspi-uart-scratch
-$ pre-commit install
-$ make
+$ cd raspi-uart-scratch/rust-tools
+$ cargo test
+$ cargo run
 ----
 
 === Maintenace

@@ -17,3 +17,6 @@ target
 
 # Rust: RustRover
 .idea/
+
+# Our log files
+*.log

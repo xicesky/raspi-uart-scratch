@@ -38,11 +38,14 @@ impl DebuggingDecoder {
     fn handle_signal_byte(&mut self, signal: u8) {
         // io::stdout().write_all(values).unwrap();
         let bit = pulse_decoder::decode_pulse(signal ^ 0xFF);
-        println!("Signal {:010b} = {}", signal, bit);
+        println!("Signal {:08b} = {}", signal, bit);
         self.dcf_decoder.add_bit(bit);
     }
 
     fn handle_signal_bytes(&mut self, signal: &[u8]) {
+        for _ in 0..10 {
+            println!();
+        }
         for value in signal {
             self.handle_signal_byte(*value);
         }
