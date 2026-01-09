@@ -1,6 +1,6 @@
 use std::{fmt::{self, write}, ops::Range, slice::Iter};
 
-use jiff::{Zoned, civil::date, fmt::strtime::Display, tz};
+use jiff::{Zoned, civil::{Date, DateTime, date}, fmt::strtime::Display, tz};
 use num_traits::NumCast;
 use ringbuffer::{RingBuffer,AllocRingBuffer};
 // use serialport::Error;
@@ -52,10 +52,17 @@ macro_rules! assert_matches {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ParityBitName {
+    Minute,
+    Hour,
+    Date
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum DecodingFailure {
     NotEnoughBits,
     MissingBit,
-    ParityError,
+    ParityError(ParityBitName),
     MissingStartOfTimeCode,
     NotSync,    /* Missing "skipped" bit 59 */
     InvalidTimezoneBits,
@@ -154,7 +161,7 @@ impl FromBits for Result<DCF77_TZ> {
     }
 }
 
-fn checkParity(bits: &[Bit]) -> Result<()> {
+fn checkParity(name: ParityBitName, bits: &[Bit]) -> Result<()> {
     let mut parity = false; /* even */
     for bit in bits {
         let value = bit.to_bit()
@@ -162,7 +169,7 @@ fn checkParity(bits: &[Bit]) -> Result<()> {
         parity ^= value;
     }
     // FIXME: simplify! how?
-    if parity { From::from(DecodingFailure::ParityError) }
+    if parity { From::from(DecodingFailure::ParityError(name)) }
     else { Ok(()) }
 }
 
@@ -282,11 +289,11 @@ impl Decoder {
         if bitvec[20] != Bit::Value(true) {
             return From::from(DecodingFailure::MissingStartOfTimeCode)
         }
-        checkParity(&bitvec[21..29])?;
+        checkParity(ParityBitName::Minute, &bitvec[21..29])?;
         let minute: i8 = decodeBCD(&bitvec[21..25], &bitvec[25..28])?;
-        checkParity(&bitvec[29..36])?;
+        checkParity(ParityBitName::Hour, &bitvec[29..36])?;
         let hour: i8 = decodeBCD(&bitvec[29..33], &bitvec[33..35])?;
-        checkParity(&bitvec[36..59])?;
+        checkParity(ParityBitName::Date, &bitvec[36..59])?;
         let day: i8 = decodeBCD(&bitvec[36..40], &bitvec[40..42])?;
         let month: i8 = decodeBCD(&bitvec[45..49], &bitvec[49..50])?;
         let year: i8 = decodeBCD(&bitvec[50..54], &bitvec[54..58])?;
@@ -303,11 +310,21 @@ impl Decoder {
             subsec_nanosecond: i32,
             time_zone_name: &str
          */
-        let zdt = date(full_year, month, day)
-            .at(hour, minute, 0, 0)
-            .to_zoned(dcf77_tz.to_time_zone())?;
-            // .in_tz("America/New_York")?;
-        Ok(zdt)
+        let dt = DateTime::new(
+            full_year, month, day,
+            hour, minute, 0, 0
+        );
+        let tz = dcf77_tz.to_time_zone();
+        match dt {
+            Ok(value) => {
+                let x = value.to_zoned(tz)?;
+                Ok(x)
+            }
+            // Err(e) if e.is_range() => {
+            //     Err(From::from(DecodingFailure::ParityError))
+            // }
+            Err(e) => Err(From::from(e))
+        }
     }
 }
 
@@ -433,4 +450,44 @@ mod tests {
         let decoded = decoder.decode_dcf77();
         assert_matches!(decoded, Err(Error::DecodingError(DecodingFailure::NotSync)));
     }
+
+    #[test]
+    fn test_decoder_do_not_panic() {
+        // The decoder should not panic if fields are out of range
+        let mut signal = build_valid_signal();
+        signal[21..29].copy_from_slice(&[
+            // 1101 (11, lsb)
+            Bit::Value(true),
+            Bit::Value(true),
+            Bit::Value(false),
+            Bit::Value(true),
+            // 101 (5, lsb)
+            Bit::Value(true),
+            Bit::Value(false),
+            Bit::Value(true),
+            // 1 (even parity)
+            Bit::Value(true),
+        ]);
+        let mut decoder: Decoder = Decoder::new();
+
+        decoder.add_bit_ref_iter(signal.iter());
+        assert_eq!(decoder.len(), 60);
+
+        let decoded = decoder.decode_dcf77();
+        println!("{:?}", decoded);
+        assert_matches!(decoded, Err(Error::JiffError(_)));
+    }
+
+    /* TODO: Use some real-life examples:
+        ---------------RADMLS1248124P124812P1248121241248112481248P_
+        01001011111101100010101100101011010110010111110000011001010_
+            last error: DecodingError(ParityError)
+
+        ---------------RADMLS1248124P124812P1248121241248112481248P_
+        01101100100001100010111100100011010110010010110000011101001_
+            last error: -
+        dcf77:  2034-01-09T16:27:00+02:00[+02:00]
+
+        Signal 11111111 = _
+     */
 }
