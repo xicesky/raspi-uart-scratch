@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Markus' DCF77 Decoder
+Icon=lxterminal
+#URL=/usr/share/raspi-ui-overrides/applications/lxterminal.desktop
+Exec=lxterminal -e bash -c 'export BASH_DOTDIR=~/.config/bash;. $BASH_DOTDIR/.bashrc;~/Dev/raspi-uart-scratch/rust-tools/desktop-runscript.sh;echo;echo Enter drücken zum beenden;read -r dummy'
+Terminal=false
